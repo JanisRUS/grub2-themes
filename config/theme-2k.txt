@@ -5,7 +5,7 @@
 title-text: ""
 desktop-image: "background.jpg"
 desktop-color: "#000000"
-terminal-font: "Terminus Regular 18"
+terminal-font: "Aldrich Regular 18"
 terminal-box: "terminal_box_*.png"
 #terminal-left: "0"
 #terminal-top: "0"
@@ -19,7 +19,7 @@ terminal-border: "0"
   top = 30%
   width = 40%
   height = 40%
-  item_font = "Unifont Regular 24"
+  item_font = "Aldrich Regular 24"
   item_color = "#cccccc"
   selected_item_color = "#ffffff"
   icon_width = 48
@@ -48,5 +48,5 @@ terminal-border: "0"
   id = "__timeout__"
   text = "Booting in %d seconds"
   color = "#cccccc"
-  font = "Unifont Regular 24"
+  font = "Aldrich Regular 24"
 }

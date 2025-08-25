@@ -11,7 +11,7 @@ tui_root_login=
 THEME_DIR="/usr/share/grub/themes"
 REO_DIR="$(cd $(dirname $0) && pwd)"
 
-THEME_VARIANTS=('tela' 'vimix' 'stylish' 'whitesur')
+THEME_VARIANTS=('tela' 'vimix' 'stylish' 'whitesur' 'legion')
 ICON_VARIANTS=('color' 'white' 'whitesur')
 SCREEN_VARIANTS=('1080p' '2k' '4k' 'ultrawide' 'ultrawide2k')
 custom_resolution=""
@@ -63,14 +63,14 @@ cat << EOF
 Usage: $0 [OPTION]...
 
 OPTIONS:
-  -t, --theme                 theme variant(s)          [tela|vimix|stylish|whitesur]       (default is tela)
-  -i, --icon                  icon variant(s)           [color|white|whitesur]              (default is color)
-  -s, --screen                screen display variant(s) [1080p|2k|4k|ultrawide|ultrawide2k] (default is 1080p)
-  -c, --custom-resolution     set custom resolution     (e.g., 1600x900)                    (disabled in default)
-  -r, --remove                remove theme              [tela|vimix|stylish|whitesur]       (must add theme name option, default is tela)
+  -t, --theme                 theme variant(s)          [tela|vimix|stylish|whitesur|legion]      (default is tela)
+  -i, --icon                  icon variant(s)           [color|white|whitesur]                    (default is color)
+  -s, --screen                screen display variant(s) [1080p|2k|4k|ultrawide|ultrawide2k|WQXGA] (default is 1080p)
+  -c, --custom-resolution     set custom resolution     (e.g., 1600x900)                          (disabled in default)
+  -r, --remove                remove theme              [tela|vimix|stylish|whitesur|legion]      (must add theme name option, default is tela)
 
   -b, --boot                  install theme into '/boot/grub' or '/boot/grub2'
-  -g, --generate              do not install but generate theme into chosen directory       (must add your directory)
+  -g, --generate              do not install but generate theme into chosen directory             (must add your directory)
 
   -h, --help                  show this help
 
@@ -116,7 +116,7 @@ generate() {
 
   # Determine which configuration file and assets to use
   if [[ -n "$custom_resolution" ]]; then
-    if has_command apt || has_command pacman || has_command eopkg; then
+    if has_command pacman; then
       install_depends imagemagick
     else
       install_depends ImageMagick
@@ -135,7 +135,7 @@ generate() {
 
   # Use custom background.jpg as grub background image
   if [[ -f "${REO_DIR}/background.jpg" ]]; then
-    if has_command apt || has_command pacman || has_command eopkg; then
+    if has_command pacman; then
       install_depends imagemagick
     else
       install_depends ImageMagick
@@ -240,6 +240,8 @@ install() {
       gfxmode="GRUB_GFXMODE=2560x1440,auto"
     elif [[ ${screen} == 'ultrawide2k' ]]; then
       gfxmode="GRUB_GFXMODE=3440x1440,auto"
+    elif [[ ${screen} == 'WQXGA' ]]; then
+      gfxmode="GRUB_GFXMODE=2560x1600,auto"
     fi
 
     if grep "GRUB_GFXMODE=" /etc/default/grub 2>&1 >/dev/null; then
@@ -363,12 +365,14 @@ run_dialog() {
       1 "Vimix Theme" off  \
       2 "Tela Theme" on \
       3 "Stylish Theme" off  \
-      4 "WhiteSur Theme" off --output-fd 1 )
+      4 "WhiteSur Theme" off \
+      5 "Legion Theme" off --output-fd 1 )
       case "$tui" in
         1) theme="vimix"      ;;
         2) theme="tela"       ;;
         3) theme="stylish"    ;;
         4) theme="whitesur"   ;;
+        5) theme="legion"     ;;
         *) operation_canceled ;;
      esac
 
@@ -390,13 +394,15 @@ run_dialog() {
       2 "1080p ultrawide (2560x1080)" off  \
       3 "2k (2560x1440)" off \
       4 "4k (3840x2160)" off \
-      5 "1440p ultrawide (3440x1440)" off --output-fd 1 )
+      5 "1440p ultrawide (3440x1440)" off \
+      6 "WQXGA (2650x1600)" off --output-fd 1 )
       case "$tui" in
         1) screen="1080p"       ;;
         2) screen="ultrawide"   ;;
         3) screen="2k"          ;;
         4) screen="4k"          ;;
         5) screen="ultrawide2k" ;;
+        6) screen="WQXGA"       ;;
         *) operation_canceled   ;;
      esac
 
@@ -444,21 +450,15 @@ updating_grub() {
 
 function install_program () {
   if has_command zypper; then
-    zypper in -y "$@"
-  elif has_command swupd; then
-    swupd bundle-add "$@"
+    zypper in "$@"
   elif has_command apt-get; then
     apt-get install "$@"
   elif has_command dnf; then
     dnf install -y "$@"
   elif has_command yum; then
-    yum install -y "$@"
+    yum install "$@"
   elif has_command pacman; then
-    pacman -Syyu --noconfirm --needed "$@"
-  elif has_command xbps-install; then
-    xbps-install -Sy "$@"
-  elif has_command eopkg; then
-    eopkg -y install "$@"
+    pacman -S --noconfirm "$@"
   fi
 }
 
@@ -612,6 +612,10 @@ while [[ $# -gt 0 ]]; do
             themes+=("${THEME_VARIANTS[3]}")
             shift
             ;;
+          legion)
+            themes+=("${THEME_VARIANTS[4]}")
+            shift
+            ;;
           -*)
             break
             ;;
@@ -651,6 +655,10 @@ while [[ $# -gt 0 ]]; do
             ;;
           whitesur)
             themes+=("${THEME_VARIANTS[3]}")
+            shift
+            ;;
+          legion)
+            themes+=("${THEME_VARIANTS[4]}")
             shift
             ;;
           -*)
@@ -713,6 +721,10 @@ while [[ $# -gt 0 ]]; do
             ;;
           ultrawide2k)
             screens+=("${SCREEN_VARIANTS[4]}")
+            shift
+            ;;
+          WQXGA)
+            screens+=("${SCREEN_VARIANTS[5]}")
             shift
             ;;
           -*)
